@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Borang Permohonan Cuti</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .form-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .form-header img {
+      height: 60px;
+    }
+    .form-header h2 {
+      margin: 0;
+      text-transform: uppercase;
+      text-align: center;
+      flex-grow: 1;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    input, textarea, select {
+      border: none;
+      border-bottom: 1px solid #000;
+      border-radius: 0;
+      box-shadow: none;
+      padding-left: 0;
+    }
+    input:focus, textarea:focus, select:focus {
+      box-shadow: none;
+    }
+    .print-signature {
+      display: none;
+      margin-top: 80px;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-signature { display: block; }
+      .print-signature .line {
+        border-bottom: 1px solid #000;
+        height: 24px;
+        margin-bottom: 4px;
+        width: 100%;
+      }
+      .screen-approver { display: none !important; }
+      input, textarea, select {
+        border: none !important;
+        color: #000;
+      }
+      input::placeholder, textarea::placeholder, select::placeholder {
+        color: #000;
+      }
+      body { padding: 20px; }
+      table {
+        border-collapse: collapse !important;
+        width: 100%;
+      }
+      table, th, td {
+        border: 1px solid black !important;
+      }
+      th, td {
+        padding: 8px;
+        text-align: left;
+      }
+      .remove-btn { display: none !important; }
+    }
+    .remove-btn {
+      color: red;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      background: none;
+    }
+    .remove-btn:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="form-header">
+    <img src="logo.png" alt="Company Logo">
+    <h2>Borang Permohonan Cuti / Leave Application Form</h2>
+  </div>
+  <form id="leaveForm">
+    <div class="mb-3 row">
+      <div class="col-md-6">
+        <label for="name">Nama / Name</label>
+        <input type="text" class="form-control" id="name" placeholder="Nama Penuh" required>
+      </div>
+      <div class="col-md-6">
+        <label for="position">Jawatan / Position</label>
+        <input type="text" class="form-control" id="position" required>
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <div class="col-md-6">
+        <label for="reason">Sebab / Reason</label>
+        <textarea class="form-control" id="reason" rows="2" required></textarea>
+      </div>
+      <div class="col-md-6 screen-approver">
+        <label for="approver">Approver Name</label>
+        <input type="text" class="form-control" id="approver" placeholder="Nama pelulus" required>
+      </div>
+    </div>
+    <div class="mb-4 row no-print align-items-end">
+      <div class="col-md-4">
+        <label for="leaveDate">Pilih Tarikh Cuti</label>
+        <input type="date" class="form-control" id="leaveDate">
+      </div>
+      <div class="col-md-4">
+        <label for="duration">Tempoh Cuti / Duration</label>
+        <select class="form-control" id="duration">
+          <option value="">-- Sila Pilih / Please Select --</option>
+          <option value="Full Day">Full Day</option>
+          <option value="Half Day AM">Half Day AM</option>
+          <option value="Half Day PM">Half Day PM</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button type="button" class="btn btn-success mt-4" onclick="addLeave()">Add Leave</button>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label>Senarai Tarikh Cuti</label>
+      <table class="table table-bordered" id="leaveTable">
+        <thead>
+          <tr>
+            <th style="width: 30%;">DATE</th>
+            <th>DAY</th>
+            <th>DURATION</th>
+            <th class="no-print" style="width: 10%;">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="leaveTableBody"></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3">Total Days Applied</th>
+            <th id="totalDays">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="print-signature text-end">
+      <div class="text-center" style="width: 25%; float: right;">
+        <p class="mb-1"><strong>Disahkan oleh / Approved By:</strong><br><span id="printedApproverName"></span></p>
+        <div class="line"></div>
+        <p class="mt-2">Date: ____________</p>
+      </div>
+    </div>
+    <div class="text-center mt-4 no-print">
+      <button type="submit" class="btn btn-primary">Cetak / Print</button>
+    </div>
+  </form>
+  <script>
+    const form = document.getElementById('leaveForm');
+    const leaveTableBody = document.getElementById('leaveTableBody');
+    const totalDaysCell = document.getElementById('totalDays');
+    const approverInput = document.getElementById('approver');
+    const printedApproverName = document.getElementById('printedApproverName');
+    const durationInput = document.getElementById('duration');
+    const leaveDateInput = document.getElementById('leaveDate');
+    let addedDates = [];
+
+    function addLeave() {
+      const dateValue = leaveDateInput.value;
+      const durationValue = durationInput.value;
+      if (!dateValue || !durationValue || addedDates.some(d => d.date === dateValue)) {
+        alert("Please select a valid and unique date with duration.");
+        return;
+      }
+      addedDates.push({ date: dateValue, duration: durationValue });
+      addedDates.sort((a, b) => a.date.localeCompare(b.date));
+      renderLeaveTable();
+      leaveDateInput.value = '';
+      durationInput.value = '';
+    }
+
+    function removeLeave(dateToRemove) {
+      addedDates = addedDates.filter(entry => entry.date !== dateToRemove);
+      renderLeaveTable();
+    }
+
+    function renderLeaveTable() {
+      leaveTableBody.innerHTML = '';
+      let total = 0;
+      addedDates.forEach(entry => {
+        const dateObj = new Date(entry.date + 'T00:00:00');
+        const dayName = dateObj.toLocaleDateString('en-MY', { weekday: 'long' });
+        let durationValue = entry.duration.includes('Half') ? 0.5 : 1;
+        total += durationValue;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${entry.date}</td>
+          <td>${dayName}</td>
+          <td>${entry.duration}</td>
+          <td class="no-print text-center">
+            <button type="button" class="remove-btn" onclick="removeLeave('${entry.date}')">X</button>
+          </td>
+        `;
+        leaveTableBody.appendChild(row);
+      });
+      totalDaysCell.textContent = total;
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      if (addedDates.length === 0) {
+        alert('Sila tambahkan sekurang-kurangnya satu tarikh cuti.');
+        return;
+      }
+      printedApproverName.textContent = approverInput.value.trim();
+      window.print();
+    });
+  </script>
+</body>
+</html>
