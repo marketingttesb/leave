@@ -92,7 +92,10 @@
     <img src="logo.png" alt="Company Logo">
     <h2>Borang Permohonan Cuti / Leave Application Form</h2>
   </div>
+
   <form id="leaveForm">
+    
+
     <div class="mb-3 row">
       <div class="col-md-6">
         <label for="name">Nama / Name</label>
@@ -113,6 +116,7 @@
         <input type="text" class="form-control" id="approver" placeholder="Nama pelulus" required>
       </div>
     </div>
+
     <div class="mb-4 row no-print align-items-end">
       <div class="col-md-4">
         <label for="leaveDate">Pilih Tarikh Cuti</label>
@@ -131,6 +135,7 @@
         <button type="button" class="btn btn-success mt-4" onclick="addLeave()">Add Leave</button>
       </div>
     </div>
+
     <div class="mb-3">
       <label>Senarai Tarikh Cuti</label>
       <table class="table table-bordered" id="leaveTable">
@@ -151,18 +156,34 @@
         </tfoot>
       </table>
     </div>
+
     <div class="print-signature text-end">
-      <div class="text-center" style="width: 25%; float: right;">
-        <p class="mb-1"><strong>Disahkan oleh / Approved By:</strong><br><span id="printedApproverName"></span></p>
-        <div class="line"></div>
-        <p class="mt-2">Date: ____________</p>
+  <div class="d-flex justify-content-between">
+    <div style="width: 25%;">
+      <p class="mb-1"><strong>Tarikh Permohonan / Applied On:</strong><br><span id="printedAppliedDate"></span></p>
+      <div class="line"></div>
+    </div>
+    <div class="text-center" style="width: 25%;">
+      <p class="mb-1"><strong>Disahkan oleh / Approved By:</strong><br><span id="printedApproverName"></span></p>
+      <div class="line"></div>
+      <p class="mt-2">Date: ____________</p>
+    </div>
       </div>
     </div>
+
     <div class="text-center mt-4 no-print">
       <button type="submit" class="btn btn-primary">Cetak / Print</button>
     </div>
   </form>
+
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const appliedDateInput = document.getElementById('appliedDate');
+      const today = new Date();
+      const formatted = today.toLocaleDateString('en-GB');
+      if (appliedDateInput) appliedDateInput.value = formatted;
+    });
+
     const form = document.getElementById('leaveForm');
     const leaveTableBody = document.getElementById('leaveTableBody');
     const totalDaysCell = document.getElementById('totalDays');
@@ -214,6 +235,8 @@
     }
 
     form.addEventListener('submit', function(e) {
+      const appliedDate = new Date();
+      document.getElementById('printedAppliedDate').textContent = appliedDate.toLocaleDateString('en-GB');
       e.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
